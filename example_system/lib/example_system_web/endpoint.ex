@@ -1,7 +1,14 @@
 defmodule ExampleSystemWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :example_system
+  @session_options [
+    store: :cookie,
+    key: "_example_system_key",
+    signing_salt: "Xl786J7N"
+  ]
 
-  socket "/live", Phoenix.LiveView.Socket
+  socket "/live", Phoenix.LiveView.Socket,
+  longpoll: [connect_info: [session: @session_options], log: false],
+  websocket: [connect_info: [session: @session_options], log: false]
 
   plug Plug.Static, at: "/", from: :example_system, gzip: false, only: ~w(css fonts images js favicon.ico robots.txt)
 
@@ -12,6 +19,7 @@ defmodule ExampleSystemWeb.Endpoint do
   end
 
   plug Plug.RequestId
+  plug Plug.Telemetry, event_prefix: [:phoenix, :endpoint]
   plug Plug.Logger
 
   plug Plug.Parsers,
@@ -22,10 +30,7 @@ defmodule ExampleSystemWeb.Endpoint do
   plug Plug.MethodOverride
   plug Plug.Head
 
-  plug Plug.Session,
-    store: :cookie,
-    key: "_example_system_key",
-    signing_salt: "Xl786J7N"
+  plug Plug.Session, @session_options
 
   plug ExampleSystemWeb.Router
 
